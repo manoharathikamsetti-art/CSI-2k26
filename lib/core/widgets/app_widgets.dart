@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../constants/app_colors.dart';
-import '../constants/app_strings.dart';
 import '../routes/app_routes.dart';
+import '../../l10n/app_localizations.dart';
 import '../../models/complaint.dart';
 
 class GovernmentScaffold extends StatelessWidget {
@@ -176,7 +176,7 @@ class SecondaryActionButton extends StatelessWidget {
   });
 
   final String label;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final IconData? icon;
 
   @override
@@ -309,6 +309,8 @@ class AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Drawer(
       child: SafeArea(
         child: ListView(
@@ -318,28 +320,23 @@ class AppDrawer extends StatelessWidget {
             const SizedBox(height: 8),
             _DrawerTile(
               icon: Icons.home_rounded,
-              label: 'Citizen Home',
-              onTap: () => Navigator.pushReplacementNamed(context, AppRoutes.citizenHome),
+              label: l10n.homeTitle,
+              onTap: () => Navigator.pushReplacementNamed(context, AppRoutes.home),
             ),
             _DrawerTile(
-              icon: Icons.person_rounded,
-              label: 'Profile',
-              onTap: () => Navigator.pushNamed(context, AppRoutes.profile),
+              icon: Icons.language_rounded,
+              label: l10n.languageTitle,
+              onTap: () => Navigator.pushNamed(context, AppRoutes.language),
             ),
             _DrawerTile(
-              icon: Icons.history_rounded,
-              label: 'Complaint History',
-              onTap: () => Navigator.pushNamed(context, AppRoutes.complaintHistory),
+              icon: Icons.mic_rounded,
+              label: l10n.voiceComplaintTitle,
+              onTap: () => Navigator.pushNamed(context, AppRoutes.voiceComplaint),
             ),
             _DrawerTile(
-              icon: Icons.settings_rounded,
-              label: 'Settings',
-              onTap: () => Navigator.pushNamed(context, AppRoutes.settings),
-            ),
-            _DrawerTile(
-              icon: Icons.admin_panel_settings_rounded,
-              label: 'Officer Login',
-              onTap: () => Navigator.pushNamed(context, AppRoutes.officerLogin),
+              icon: Icons.edit_note_rounded,
+              label: l10n.textComplaintTitle,
+              onTap: () => Navigator.pushNamed(context, AppRoutes.textComplaint),
             ),
           ],
         ),
@@ -369,18 +366,18 @@ class _DrawerHeader extends StatelessWidget {
             child: const Icon(Icons.apartment_rounded, color: Colors.white),
           ),
           const SizedBox(width: 14),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  AppStrings.appName,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  context.l10n.appName,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
-                  'Premium hackathon frontend',
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                  context.l10n.appTagline,
+                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
                 ),
               ],
             ),

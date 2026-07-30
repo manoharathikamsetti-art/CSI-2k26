@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/widgets/app_widgets.dart';
-import '../../providers/app_state_scope.dart';
+import '../../l10n/app_localizations.dart';
+import '../../services/grievance_letter_service.dart';
 
 class TextComplaintScreen extends StatefulWidget {
   const TextComplaintScreen({super.key});
@@ -13,122 +15,84 @@ class TextComplaintScreen extends StatefulWidget {
 }
 
 class _TextComplaintScreenState extends State<TextComplaintScreen> {
-  final TextEditingController _nameController = TextEditingController(text: 'Ananya Rao');
-  final TextEditingController _locationController = TextEditingController(text: 'Ward 8, Collectorate Road');
-  final TextEditingController _detailsController = TextEditingController(
-    text: 'The road surface is broken and causes delays for school vehicles and ambulances.',
-  );
-
-  String _selectedCategory = 'Road Repair';
-  String _selectedPriority = 'High';
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _complaintController = TextEditingController();
 
   @override
   void dispose() {
     _nameController.dispose();
-    _locationController.dispose();
-    _detailsController.dispose();
     super.dispose();
+  }
+
+  void _generateLetter() {
+    final l10n = context.l10n;
+    final citizenName = _nameController.text.trim();
+    final complaint = _complaintController.text.trim();
+
+    if (citizenName.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.validationCitizenNameRequired)));
+      return;
+    }
+    if (complaint.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.validationComplaintRequired)));
+      return;
+    }
+
+    final generatedLetter = GrievanceLetterService.generateLetter(
+      citizenName: citizenName,
+      complaintText: complaint,
+      l10n: l10n,
+    );
+
+    Navigator.pushNamed(context, AppRoutes.generatedLetter, arguments: generatedLetter);
   }
 
   @override
   Widget build(BuildContext context) {
-    final complaintType = AppStateScope.of(context).selectedComplaintType;
+    final l10n = context.l10n;
 
     return GovernmentScaffold(
       appBar: CustomAppBar(
-        title: 'Text Complaint',
-        subtitle: 'Compose a structured grievance in a guided form.',
+        title: l10n.textComplaintTitle,
+        subtitle: l10n.textComplaintSubtitle,
       ),
       child: ListView(
         padding: const EdgeInsets.all(20),
         children: [
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(18),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Draft template', style: Theme.of(context).textTheme.titleLarge),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Current selected type: $complaintType',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
+                  Text(l10n.citizenNameLabel, style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 16),
                   AppTextField(
                     controller: _nameController,
-                    label: 'Citizen name',
+                    label: l10n.citizenNameLabel,
+                    hintText: l10n.citizenNameHint,
                     prefixIcon: Icons.person_rounded,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 18),
+                  Text(l10n.complaintLabel, style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 10),
                   AppTextField(
-                    controller: _locationController,
-                    label: 'Location',
-                    prefixIcon: Icons.location_on_rounded,
-                  ),
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
-                    initialValue: _selectedCategory,
-                    decoration: const InputDecoration(labelText: 'Category'),
-                    items: const [
-                      'Road Repair',
-                      'Water Leakage',
-                      'Streetlight',
-                      'Sanitation',
-                      'Pension',
-                    ]
-                        .map((item) => DropdownMenuItem(value: item, child: Text(item)))
-                        .toList(),
-                    onChanged: (value) => setState(() => _selectedCategory = value ?? _selectedCategory),
-                  ),
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
-                    initialValue: _selectedPriority,
-                    decoration: const InputDecoration(labelText: 'Priority'),
-                    items: const ['Low', 'Medium', 'High']
-                        .map((item) => DropdownMenuItem(value: item, child: Text(item)))
-                        .toList(),
-                    onChanged: (value) => setState(() => _selectedPriority = value ?? _selectedPriority),
-                  ),
-                  const SizedBox(height: 12),
-                  AppTextField(
-                    controller: _detailsController,
-                    label: 'Complaint details',
+                    controller: _complaintController,
+                    label: l10n.complaintLabel,
+                    hintText: l10n.complaintHint,
                     prefixIcon: Icons.description_rounded,
-                    maxLines: 5,
+                    maxLines: 8,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   PrimaryActionButton(
-                    label: 'Submit to AI Processing',
+                    label: l10n.generateLetterButton,
                     icon: Icons.auto_awesome_rounded,
-                    onPressed: () => Navigator.pushNamed(context, AppRoutes.aiProcessing),
+                    onPressed: _generateLetter,
                   ),
                 ],
               ),
             ),
-          ),
-          const SizedBox(height: 18),
-          Row(
-            children: const [
-              Expanded(
-                child: MetricCard(
-                  title: 'Fields completed',
-                  value: '5/5',
-                  icon: Icons.fact_check_rounded,
-                  color: AppColors.success,
-                ),
-              ),
-              SizedBox(width: 12),
-              Expanded(
-                child: MetricCard(
-                  title: 'AI confidence',
-                  value: '96%',
-                  icon: Icons.psychology_rounded,
-                  color: AppColors.primary,
-                ),
-              ),
-            ],
-          ),
+          ).animate().fadeIn().slideY(begin: 0.08, end: 0),
         ],
       ),
     );

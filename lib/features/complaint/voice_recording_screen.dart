@@ -1,136 +1,136 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/widgets/app_widgets.dart';
+import '../../l10n/app_localizations.dart';
+import '../../services/grievance_letter_service.dart';
 
-class VoiceRecordingScreen extends StatelessWidget {
+class VoiceRecordingScreen extends StatefulWidget {
   const VoiceRecordingScreen({super.key});
 
   @override
+  State<VoiceRecordingScreen> createState() => _VoiceRecordingScreenState();
+}
+
+class _VoiceRecordingScreenState extends State<VoiceRecordingScreen> {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _recordedTextController = TextEditingController();
+  bool _recording = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _recordedTextController.dispose();
+    super.dispose();
+  }
+
+  void _toggleRecording() {
+    setState(() {
+      _recording = !_recording;
+      if (_recording) {
+        _recordedTextController.text = context.l10n.recordingPlaceholder;
+      }
+    });
+  }
+
+  void _generateLetter() {
+    final l10n = context.l10n;
+    final citizenName = _nameController.text.trim();
+    final transcript = _recordedTextController.text.trim();
+
+    if (citizenName.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.validationCitizenNameRequired)));
+      return;
+    }
+    if (transcript.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.validationRecordedTextRequired)));
+      return;
+    }
+
+    final generatedLetter = GrievanceLetterService.generateLetter(
+      citizenName: citizenName,
+      complaintText: transcript,
+      l10n: l10n,
+    );
+
+    Navigator.pushNamed(context, AppRoutes.generatedLetter, arguments: generatedLetter);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return GovernmentScaffold(
       appBar: CustomAppBar(
-        title: 'Voice Complaint',
-        subtitle: 'Capture the grievance using a premium voice-first flow.',
+        title: l10n.voiceComplaintTitle,
+        subtitle: l10n.voiceComplaintSubtitle,
       ),
       child: ListView(
         padding: const EdgeInsets.all(20),
         children: [
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(22),
+              padding: const EdgeInsets.all(20),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    height: 88,
-                    width: 88,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        colors: [AppColors.primary, AppColors.secondary],
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.18),
-                          blurRadius: 24,
-                          offset: const Offset(0, 12),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(Icons.mic_rounded, color: Colors.white, size: 38),
+                  AppTextField(
+                    controller: _nameController,
+                    label: l10n.citizenNameLabel,
+                    hintText: l10n.citizenNameHint,
+                    prefixIcon: Icons.person_rounded,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: PrimaryActionButton(
+                          label: l10n.recordButton,
+                          icon: Icons.mic_rounded,
+                          onPressed: _toggleRecording,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: SecondaryActionButton(
+                          label: l10n.stopButton,
+                          icon: Icons.stop_rounded,
+                          onPressed: _recording ? _toggleRecording : () {},
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
                   Text(
-                    'Tap to record your grievance',
+                    l10n.recordedTextPreviewLabel,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    'This frontend uses a visual mock recording experience and routes to AI processing.',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      12,
-                      (index) => Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 3),
-                        child: AnimatedContainer(
-                          duration: Duration(milliseconds: 350 + (index * 30)),
-                          height: 18 + (index % 4) * 12,
-                          width: 7,
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.18 + (index % 3) * 0.08),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                        ),
-                      ),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: Text(
+                      _recordedTextController.text.isEmpty ? l10n.recordedTextHint : _recordedTextController.text,
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ),
                   const SizedBox(height: 20),
                   PrimaryActionButton(
-                    label: 'Continue to AI Processing',
-                    icon: Icons.arrow_forward_rounded,
-                    onPressed: () => Navigator.pushNamed(context, AppRoutes.aiProcessing),
-                  ),
-                  const SizedBox(height: 12),
-                  SecondaryActionButton(
-                    label: 'Use Text Instead',
-                    icon: Icons.edit_note_rounded,
-                    onPressed: () => Navigator.pushReplacementNamed(context, AppRoutes.textComplaint),
+                    label: l10n.generateLetterButton,
+                    icon: Icons.auto_awesome_rounded,
+                    onPressed: _generateLetter,
                   ),
                 ],
               ),
             ),
-          ),
-          const SizedBox(height: 18),
-          const _StepsCard(),
-        ],
-      ),
-    );
-  }
-}
-
-class _StepsCard extends StatelessWidget {
-  const _StepsCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text('What happens next', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-            SizedBox(height: 14),
-            _StepItem(label: 'Speech to text conversion'),
-            _StepItem(label: 'AI grievance summarization'),
-            _StepItem(label: 'Auto-generated letter and token'),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _StepItem extends StatelessWidget {
-  const _StepItem({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        children: [
-          const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 18),
-          const SizedBox(width: 10),
-          Text(label),
+          ).animate().fadeIn().slideY(begin: 0.08, end: 0),
         ],
       ),
     );

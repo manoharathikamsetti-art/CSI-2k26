@@ -1,11 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_strings.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/widgets/app_widgets.dart';
+import '../../l10n/app_localizations.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -26,6 +27,8 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return GovernmentScaffold(
       child: Center(
         child: Padding(
@@ -55,18 +58,18 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
               const SizedBox(height: 24),
               Text(
-                AppStrings.appName,
+                l10n.appName,
                 style: Theme.of(context).textTheme.displaySmall?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
                 textAlign: TextAlign.center,
-              ),
+              ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.12, end: 0),
               const SizedBox(height: 12),
               Text(
-                AppStrings.tagline,
+                l10n.appTagline,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyLarge,
-              ),
+              ).animate().fadeIn(delay: 120.ms).slideY(begin: 0.12, end: 0),
               const SizedBox(height: 26),
               const SizedBox(
                 width: 26,
@@ -75,7 +78,7 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
               const SizedBox(height: 20),
               Text(
-                AppStrings.mockDisclaimer,
+                l10n.splashLoading,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall,
               ),

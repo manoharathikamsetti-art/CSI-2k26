@@ -1,59 +1,65 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/widgets/app_widgets.dart';
-import '../../models/language_option.dart';
 import '../../providers/app_state_scope.dart';
-import '../../services/mock_data_service.dart';
+import '../../l10n/app_localizations.dart';
 
 class LanguageSelectionScreen extends StatelessWidget {
   const LanguageSelectionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final languages = MockDataService.languages();
+    final l10n = context.l10n;
 
     return GovernmentScaffold(
       appBar: CustomAppBar(
-        title: 'Choose Language',
-        subtitle: 'Select the language that feels most comfortable.',
-        actions: [
-          IconButton(
-            onPressed: () => Navigator.pushNamed(context, AppRoutes.officerLogin),
-            icon: const Icon(Icons.admin_panel_settings_rounded),
-          ),
-        ],
+        title: l10n.languageTitle,
+        subtitle: l10n.languageSubtitle,
       ),
       child: ListView(
         padding: const EdgeInsets.all(20),
         children: [
           _HeroPanel(),
           const SizedBox(height: 18),
-          SectionHeader(
-            title: 'Language options',
-            subtitle: 'AI assisted translation is available in the frontend demo.',
-          ),
+          SectionHeader(title: l10n.languageTitle, subtitle: l10n.languageSubtitle),
           const SizedBox(height: 12),
-          ...languages.map(
-            (language) => _LanguageTile(
-              language: language,
-              selected: AppStateScope.of(context).languageCode == language.code,
-              onTap: () {
-                AppStateScope.of(context).updateLanguage(language.code);
-                Navigator.pushReplacementNamed(context, AppRoutes.citizenHome);
-              },
-            ),
+          _LanguageCard(
+            title: l10n.englishLanguage,
+            subtitle: l10n.languageCardHint,
+            selected: AppStateScope.of(context).languageCode == 'en',
+            onTap: () => _selectLanguage(context, 'en'),
+          ),
+          _LanguageCard(
+            title: l10n.teluguLanguage,
+            subtitle: l10n.languageCardHint,
+            selected: AppStateScope.of(context).languageCode == 'te',
+            onTap: () => _selectLanguage(context, 'te'),
+          ),
+          _LanguageCard(
+            title: l10n.hindiLanguage,
+            subtitle: l10n.languageCardHint,
+            selected: AppStateScope.of(context).languageCode == 'hi',
+            onTap: () => _selectLanguage(context, 'hi'),
           ),
         ],
       ),
     );
+  }
+
+  void _selectLanguage(BuildContext context, String code) {
+    AppStateScope.of(context).updateLanguage(code);
+    Navigator.pushReplacementNamed(context, AppRoutes.home);
   }
 }
 
 class _HeroPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -68,19 +74,13 @@ class _HeroPanel extends StatelessWidget {
               child: const Icon(Icons.translate_rounded, size: 30, color: AppColors.primary),
             ),
             const SizedBox(width: 16),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Inclusive citizen access',
-                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
-                  ),
+                  Text(l10n.languageTitle, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
                   SizedBox(height: 6),
-                  Text(
-                    'Multilingual experience for citizens, officers and field staff.',
-                    style: TextStyle(color: AppColors.textSecondary),
-                  ),
+                  Text(l10n.languageSubtitle, style: TextStyle(color: AppColors.textSecondary)),
                 ],
               ),
             ),
@@ -91,14 +91,16 @@ class _HeroPanel extends StatelessWidget {
   }
 }
 
-class _LanguageTile extends StatelessWidget {
-  const _LanguageTile({
-    required this.language,
+class _LanguageCard extends StatelessWidget {
+  const _LanguageCard({
+    required this.title,
+    required this.subtitle,
     required this.selected,
     required this.onTap,
   });
 
-  final LanguageOption language;
+  final String title;
+  final String subtitle;
   final bool selected;
   final VoidCallback onTap;
 
@@ -107,19 +109,38 @@ class _LanguageTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Card(
-        child: ListTile(
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
           onTap: onTap,
-          leading: CircleAvatar(
-            backgroundColor: selected ? AppColors.primary : AppColors.background,
-            foregroundColor: selected ? Colors.white : AppColors.primary,
-            child: Text(language.icon),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: selected ? AppColors.primary : AppColors.primary.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(Icons.translate_rounded, color: selected ? Colors.white : AppColors.primary),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title, style: Theme.of(context).textTheme.titleLarge),
+                      const SizedBox(height: 4),
+                      Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),
+                    ],
+                  ),
+                ),
+                Icon(selected ? Icons.check_circle_rounded : Icons.arrow_forward_ios_rounded, color: selected ? AppColors.success : AppColors.textSecondary, size: 18),
+              ],
+            ),
           ),
-          title: Text(language.label),
-          subtitle: Text(language.nativeLabel),
-          trailing: selected
-              ? const Icon(Icons.check_circle_rounded, color: AppColors.success)
-              : const Icon(Icons.arrow_forward_ios_rounded, size: 16),
-        ),
+        ).animate().fadeIn().scale(begin: const Offset(0.98, 0.98)),
       ),
     );
   }
