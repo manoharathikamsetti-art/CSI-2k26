@@ -52,6 +52,7 @@ class GrievanceLetterService {
       recommendedDepartment: recommendation.departmentLabel,
       departmentIcon: recommendation.icon,
       complaintCategory: recommendation.categoryLabel,
+      transcribedText: normalizedComplaint,
       subject: subject,
       body: body,
       fullLetter: fullLetter,

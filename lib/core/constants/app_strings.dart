@@ -1,7 +1,11 @@
+import 'package:flutter/widgets.dart';
+
+import '../../l10n/app_localizations.dart';
+
 class AppStrings {
-  static const String appName = 'District Grievance AI';
-  static const String citizenPortal = 'Citizen Portal';
-  static const String officerPortal = 'Officer Portal';
-  static const String tagline = 'AI-powered grievance management for a faster, transparent district service experience.';
-  static const String mockDisclaimer = 'All data shown in this build is mock data for frontend demonstration only.';
+  static String appName(BuildContext context) => context.l10n.appName;
+  static String citizenPortal(BuildContext context) => context.l10n.citizenPortal;
+  static String officerPortal(BuildContext context) => context.l10n.officerPortal;
+  static String tagline(BuildContext context) => context.l10n.appTagline;
+  static String mockDisclaimer(BuildContext context) => context.l10n.mockDisclaimer;
 }

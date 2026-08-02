@@ -212,6 +212,8 @@ class _GeneratedApplicationScreenState extends State<GeneratedApplicationScreen>
                   children: [
                     _InfoRow(label: l10n.citizenNameHeading, value: generated.citizenName),
                     const SizedBox(height: 14),
+                    _InfoRow(label: l10n.transcribedComplaintHeading, value: generated.transcribedText),
+                    const SizedBox(height: 14),
                     _DepartmentCard(label: l10n.recommendedDepartmentHeading, department: generated.recommendedDepartment, icon: generated.departmentIcon),
                     const SizedBox(height: 14),
                     _InfoRow(label: l10n.complaintCategoryHeading, value: generated.complaintCategory),

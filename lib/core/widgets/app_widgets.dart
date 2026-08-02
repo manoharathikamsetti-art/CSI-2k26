@@ -235,21 +235,23 @@ class AppSearchBar extends StatelessWidget {
   const AppSearchBar({
     super.key,
     this.controller,
-    this.hintText = 'Search complaints, tokens or departments',
+    this.hintText,
     this.onChanged,
   });
 
   final TextEditingController? controller;
-  final String hintText;
+  final String? hintText;
   final ValueChanged<String>? onChanged;
 
   @override
   Widget build(BuildContext context) {
+    final resolvedHintText = hintText ?? context.l10n.searchBarHint;
+
     return TextField(
       controller: controller,
       onChanged: onChanged,
       decoration: InputDecoration(
-        hintText: hintText,
+        hintText: resolvedHintText,
         prefixIcon: const Icon(Icons.search_rounded),
         suffixIcon: IconButton(
           onPressed: () {},
@@ -568,12 +570,14 @@ class _MetaPill extends StatelessWidget {
 }
 
 class LoadingIndicator extends StatelessWidget {
-  const LoadingIndicator({super.key, this.label = 'Processing...'});
+  const LoadingIndicator({super.key, this.label});
 
-  final String label;
+  final String? label;
 
   @override
   Widget build(BuildContext context) {
+    final resolvedLabel = label ?? context.l10n.processingLabel;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -586,13 +590,9 @@ class LoadingIndicator extends StatelessWidget {
               child: CircularProgressIndicator(strokeWidth: 5),
             ),
             const SizedBox(height: 16),
-            Text(label, style: Theme.of(context).textTheme.titleMedium),
+            Text(resolvedLabel, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 6),
-            Text(
-              'AI summarization and classification in progress',
-              style: Theme.of(context).textTheme.bodyMedium,
-              textAlign: TextAlign.center,
-            ),
+            Text(context.l10n.loadingSubtitle, style: Theme.of(context).textTheme.bodyMedium, textAlign: TextAlign.center),
           ],
         ),
       ),
@@ -659,11 +659,13 @@ class AppErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return EmptyState(
-      title: 'Something went wrong',
+      title: l10n.errorTitle,
       subtitle: message,
       icon: Icons.error_outline_rounded,
-      actionLabel: onRetry == null ? null : 'Retry',
+      actionLabel: onRetry == null ? null : l10n.retryButton,
       onAction: onRetry,
     );
   }
@@ -719,8 +721,11 @@ Future<bool?> showConfirmationDialog(
   BuildContext context, {
   required String title,
   required String message,
-  String confirmText = 'Confirm',
+  String? confirmText,
 }) {
+  final l10n = context.l10n;
+  final resolvedConfirmText = confirmText ?? l10n.confirmButton;
+
   return showDialog<bool>(
     context: context,
     builder: (context) {
@@ -730,11 +735,11 @@ Future<bool?> showConfirmationDialog(
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancelButton),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(confirmText),
+            child: Text(resolvedConfirmText),
           ),
         ],
       );
@@ -746,9 +751,11 @@ Future<void> showSuccessDialog(
   BuildContext context, {
   required String title,
   required String message,
-  String actionText = 'Continue',
+  String? actionText,
   VoidCallback? onAction,
 }) {
+  final resolvedActionText = actionText ?? context.l10n.continueButton;
+
   return showDialog<void>(
     context: context,
     builder: (context) {
@@ -763,7 +770,7 @@ Future<void> showSuccessDialog(
               Navigator.pop(context);
               onAction?.call();
             },
-            child: Text(actionText),
+            child: Text(resolvedActionText),
           ),
         ],
       );

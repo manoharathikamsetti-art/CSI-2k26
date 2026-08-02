@@ -21,6 +21,7 @@ class _TextComplaintScreenState extends State<TextComplaintScreen> {
   @override
   void dispose() {
     _nameController.dispose();
+    _complaintController.dispose();
     super.dispose();
   }
 
@@ -65,7 +66,7 @@ class _TextComplaintScreenState extends State<TextComplaintScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(l10n.citizenNameLabel, style: Theme.of(context).textTheme.titleMedium),
+                  _RequiredLabel(text: l10n.citizenNameLabel),
                   const SizedBox(height: 16),
                   AppTextField(
                     controller: _nameController,
@@ -74,7 +75,7 @@ class _TextComplaintScreenState extends State<TextComplaintScreen> {
                     prefixIcon: Icons.person_rounded,
                   ),
                   const SizedBox(height: 18),
-                  Text(l10n.complaintLabel, style: Theme.of(context).textTheme.titleMedium),
+                  _RequiredLabel(text: l10n.complaintLabel),
                   const SizedBox(height: 10),
                   AppTextField(
                     controller: _complaintController,
@@ -93,6 +94,24 @@ class _TextComplaintScreenState extends State<TextComplaintScreen> {
               ),
             ),
           ).animate().fadeIn().slideY(begin: 0.08, end: 0),
+        ],
+      ),
+    );
+  }
+}
+
+class _RequiredLabel extends StatelessWidget {
+  const _RequiredLabel({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text.rich(
+      TextSpan(
+        children: [
+          TextSpan(text: text, style: Theme.of(context).textTheme.titleMedium),
+          TextSpan(text: ' *', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.error)),
         ],
       ),
     );
